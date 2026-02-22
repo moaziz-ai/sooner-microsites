@@ -153,7 +153,8 @@ function selectVersion(i) {
         
         <hr class="divider">
         
-        <a href="${v.file}" target="_blank" class="action-btn primary">Open full screen ↗</a>
+        <a href="${v.file}" target="_blank" class="action-btn primary">View Form ↗</a>
+        <a href="${v.flowchart}" target="_blank" class="action-btn secondary">View Flowchart ↗</a>
         ${v.latest ? '' : `<button class="action-btn secondary" onclick="alert('To restore this version, tell Draper: restore ${v.version}')">Restore this version</button>`}
     `;
 }

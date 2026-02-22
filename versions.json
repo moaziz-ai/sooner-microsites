@@ -5,6 +5,7 @@
     "date": "2026-02-20",
     "notes": "Full redesign from Typeform. Manrope font, brand colors, one-question-per-screen, calculator with closing cost breakdown, Sooner reveal, 23-step conditional flow.",
     "file": "versions/v1.html",
+    "flowchart": "flowchart.html",
     "latest": false
   },
   {
@@ -13,6 +14,7 @@
     "date": "2026-02-22",
     "notes": "Updated highlight CSS (35% → 82%) for full letter coverage. All components verified against design system. No visual regressions.",
     "file": "versions/v2.html",
+    "flowchart": "flowchart.html",
     "latest": false
   },
   {
@@ -21,6 +23,16 @@
     "date": "2026-02-22",
     "notes": "15-point upgrade: (1) Checkbox/radio dark-border checked states with yellow fill, (2) Verified highlight gradient, (3) Button hover with dark border, ghost→yellow fill, (4) Card hover yellow bg, (5) Input focus animated center-outward underline, (6) Step slide-up + fade-in transitions, (7) Highlight sweep animation on keywords, (8) Progress bar pulse/glow, (9) Number count-up animations in calculator, (10) Confetti + badge pop on success, (11) Input scale micro-interactions, (12) Choice card snap animation on select, (13) AED comma-formatted currency throughout, (14) Manrope enforced on all elements, (15) Consistent 48/24/8px spacing system. Ramp/Linear-level polish.",
     "file": "versions/v3.html",
+    "flowchart": "flowchart.html",
+    "latest": false
+  },
+  {
+    "version": "v4",
+    "label": "V4 — Clone of V3 (Test Version)",
+    "date": "2026-02-22",
+    "notes": "Exact clone of V3 for testing purposes. Includes all V3 features and polish.",
+    "file": "versions/v4-form.html",
+    "flowchart": "flowchart/v4-flowchart.html",
     "latest": true
   }
 ]
