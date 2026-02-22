@@ -1,0 +1,10 @@
+[
+    {
+        "id": "v4-initial",
+        "label": "Form V4",
+        "date": "2026-02-22",
+        "file": "versions/v4.html",
+        "status": "live",
+        "changelog": "Initial version of the V4 form, rebuilt after source loss. Includes closing cost calculator and all previous logic."
+    }
+]
