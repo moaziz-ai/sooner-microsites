@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sooner Form Flowchart — Internal Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;background:#F5F4F0;color:#1C1B17;-webkit-font-smoothing:antialiased}
+
+/* Top bar */
+.topbar{position:fixed;top:0;left:0;right:0;background:#1C1B17;color:#F5F4F0;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;z-index:100;font-size:14px}
+.topbar h1{font-size:16px;font-weight:700;letter-spacing:-.02em}
+.topbar span{color:#E9FE0F;font-weight:600}
+
+/* Legend */
+.legend{position:fixed;top:52px;left:0;right:0;background:#fff;border-bottom:1px solid #E0E0E0;padding:10px 24px;display:flex;gap:20px;flex-wrap:wrap;z-index:99;font-size:12px;font-weight:500}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-swatch{width:18px;height:18px;border-radius:4px;border:1.5px solid #ccc;flex-shrink:0}
+
+/* Canvas area */
+.canvas{padding:120px 40px 60px;overflow-x:auto;min-height:100vh}
+.flow{display:flex;flex-direction:column;align-items:center;gap:0;min-width:700px;max-width:900px;margin:0 auto}
+
+/* Connector lines */
+.connector{width:2px;height:28px;background:#1C1B17;position:relative}
+.connector.branch{height:0}
+
+/* Branch container */
+.branch-wrap{display:flex;align-items:flex-start;justify-content:center;gap:60px;position:relative;width:100%}
+.branch-wrap::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:2px;height:14px;background:#1C1B17}
+.branch-arm{display:flex;flex-direction:column;align-items:center;gap:0}
+.branch-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 10px;border-radius:99px;margin-bottom:6px}
+.branch-label.yes{background:#d4edda;color:#155724}
+.branch-label.no{background:#f0f0f0;color:#666}
+.branch-line{width:2px;height:20px;background:#1C1B17}
+.branch-horiz{position:absolute;top:0;height:2px;background:#1C1B17}
+
+/* Node base */
+.node{border-radius:12px;padding:16px 20px;text-align:center;width:100%;max-width:520px;position:relative;transition:transform .15s,box-shadow .15s;cursor:default}
+.node:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.node-id{position:absolute;top:-10px;left:-10px;background:#1C1B17;color:#F5F4F0;font-size:11px;font-weight:700;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2}
+
+/* Node types */
+.node-screen{background:#fff;border:1.5px solid #E0E0E0}
+.node-section{background:#1C1B17;color:#F5F4F0;border:none;border-radius:8px;padding:12px 20px}
+.node-section .node-id{background:#E9FE0F;color:#1C1B17}
+.node-conditional{background:#fff;border:2px solid #1C1B17;transform:rotate(0deg);position:relative}
+.node-conditional::after{content:'';position:absolute;inset:4px;border:1.5px dashed #ccc;border-radius:8px;pointer-events:none}
+.node-formula{background:#FFFDE7;border:1.5px solid #E9FE0F}
+.node-formula .node-id{background:#E9FE0F;color:#1C1B17}
+.node-thankyou{background:#E9FE0F;border:none;color:#1C1B17}
+.node-thankyou .node-id{background:#1C1B17;color:#E9FE0F}
+
+/* Node content */
+.node-title{font-size:15px;font-weight:700;margin-bottom:4px;line-height:1.3}
+.node-desc{font-size:12px;color:#6B6B6B;line-height:1.5}
+.node-section .node-desc{color:#999}
+.node-thankyou .node-desc{color:#1C1B17;opacity:.7}
+.node-tag{display:inline-block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:4px;margin-top:6px;background:#F5F4F0;color:#6B6B6B}
+.node-formula .node-tag{background:#E9FE0F;color:#1C1B17}
+
+/* Formula detail */
+.formula-grid{display:grid;grid-template-columns:1fr auto;gap:2px 12px;text-align:left;font-size:11px;margin-top:8px;padding:8px;background:#fff;border-radius:6px;border:1px solid #f0e68c}
+.formula-grid .f-label{color:#6B6B6B}
+.formula-grid .f-value{font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.formula-grid .f-divider{grid-column:1/-1;border-top:1px solid #eee;margin:3px 0}
+
+/* Conditional diamond indicator */
+.diamond{display:inline-block;width:12px;height:12px;background:#1C1B17;transform:rotate(45deg);margin-right:6px;vertical-align:middle;border-radius:2px}
+
+/* Skip connector */
+.skip-connector{display:flex;align-items:center;gap:6px;font-size:11px;color:#999;font-weight:600}
+.skip-line{flex:1;height:1px;background:#ccc;border-top:1px dashed #ccc}
+
+/* Zoom controls */
+.zoom-controls{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:6px;z-index:100}
+.zoom-btn{background:#1C1B17;color:#F5F4F0;border:none;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;font-family:inherit;font-weight:600;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.zoom-btn:hover{background:#333}
+
+/* Responsive */
+@media(max-width:768px){
+  .canvas{padding:120px 16px 60px}
+  .node{max-width:100%;padding:14px 16px}
+  .branch-wrap{gap:20px}
+  .formula-grid{font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>Sooner Lead Qualification — <span>Flowchart</span></h1>
+  <span>v2 · Internal Reference</span>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#fff;border-color:#E0E0E0"></div> Screen</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#1C1B17"></div> Section Divider</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#fff;border-color:#1C1B17;border-width:2px"></div> Conditional (Yes/No)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#FFFDE7;border-color:#E9FE0F"></div> Formula / Calculation</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#E9FE0F;border-color:#E9FE0F"></div> Terminal (Thank You)</div>
+  <div class="legend-item"><span class="branch-label yes" style="margin:0">YES</span> Continue</div>
+  <div class="legend-item"><span class="branch-label no" style="margin:0">NO</span> Skip / Exit</div>
+</div>
+
+<div class="canvas" id="canvas">
+<div class="flow" id="flow">
+
+<!-- S1 -->
+<div class="node node-screen">
+  <div class="node-id">1</div>
+  <div class="node-title">Welcome</div>
+  <div class="node-desc">"Own your home sooner"<br>Button: <strong>Let's go →</strong></div>
+  <div class="node-tag">Entry Point</div>
+</div>
+<div class="connector"></div>
+
+<!-- S2 -->
+<div class="node node-screen">
+  <div class="node-id">2</div>
+  <div class="node-title">Property Budget</div>
+  <div class="node-desc">Input: AED amount<br>Triggers <code>calc()</code> on next</div>
+  <div class="node-tag">Input · AED</div>
+</div>
+<div class="connector"></div>
+
+<!-- S3 — Formula -->
+<div class="node node-formula">
+  <div class="node-id">3</div>
+  <div class="node-title">Cost Breakdown <span style="font-size:11px;opacity:.6">(The Pain Screen)</span></div>
+  <div class="node-desc">Shows down payment (20%) + full closing cost breakdown</div>
+  <div class="formula-grid">
+    <span class="f-label">Down Payment</span><span class="f-value">20% of budget</span>
+    <div class="f-divider"></div>
+    <span class="f-label">DLD Transfer Fee</span><span class="f-value">4% + AED 580</span>
+    <span class="f-label">Agency Fee</span><span class="f-value">2.1%</span>
+    <span class="f-label">Bank Arrangement</span><span class="f-value">1.05%</span>
+    <span class="f-label">Mortgage Registration</span><span class="f-value">0.25% + AED 290</span>
+    <span class="f-label">Valuation</span><span class="f-value">AED 3,150</span>
+    <span class="f-label">Trustee Fee</span><span class="f-value">AED 4,200 (&gt;500K) / 2,100 (≤500K)</span>
+    <span class="f-label">NOC</span><span class="f-value">AED 2,000</span>
+    <span class="f-label">Conveyancing</span><span class="f-value">0.39375%</span>
+    <div class="f-divider"></div>
+    <span class="f-label" style="font-weight:700;color:#1C1B17">Total Upfront</span><span class="f-value" style="color:#1C1B17">Down Payment + Closing Costs</span>
+  </div>
+  <div class="node-desc" style="margin-top:8px">Button: <strong>"You're eligible for AED [X]K in support →"</strong></div>
+  <div class="node-tag">Formula · Closing Costs</div>
+</div>
+<div class="connector"></div>
+
+<!-- S4 -->
+<div class="node node-screen" style="border-color:#E9FE0F;border-width:2px">
+  <div class="node-id">4</div>
+  <div class="node-title">✨ Sooner Reveal</div>
+  <div class="node-desc">Sooner pays <strong>AED [closing_costs]</strong> towards your upfront<br>Monthly repayment: <code>closing_costs ÷ 60</code><br>Button: <strong>"I'm interested — let's continue →"</strong></div>
+  <div class="node-tag">Reveal · Key Moment</div>
+</div>
+<div class="connector"></div>
+
+<!-- S5 — Conditional -->
+<div class="node node-conditional">
+  <div class="node-id">5</div>
+  <div class="node-title"><span class="diamond"></span>Accept Sooner?</div>
+  <div class="node-desc">Yes / No</div>
+</div>
+
+<!-- Branch -->
+<div style="display:flex;width:100%;max-width:520px;position:relative;margin-top:-1px">
+  <svg width="100%" height="60" viewBox="0 0 520 60" preserveAspectRatio="xMidYMid meet" style="display:block">
+    <!-- center down -->
+    <line x1="260" y1="0" x2="260" y2="14" stroke="#1C1B17" stroke-width="2"/>
+    <!-- left arm (Yes) -->
+    <line x1="260" y1="14" x2="140" y2="14" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="140" y1="14" x2="140" y2="60" stroke="#1C1B17" stroke-width="2"/>
+    <!-- right arm (No) -->
+    <line x1="260" y1="14" x2="380" y2="14" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="380" y1="14" x2="380" y2="60" stroke="#1C1B17" stroke-width="2"/>
+    <!-- labels -->
+    <rect x="112" y="22" width="56" height="18" rx="9" fill="#d4edda"/>
+    <text x="140" y="35" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#155724">YES</text>
+    <rect x="352" y="22" width="56" height="18" rx="9" fill="#f0f0f0"/>
+    <text x="380" y="35" text-anchor="middle" font-family="Manrope" font-size="10" font-weight="700" fill="#666">NO</text>
+  </svg>
+</div>
+
+<div style="display:flex;width:100%;max-width:520px;gap:20px">
+  <!-- Yes path -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div class="node node-screen" style="width:100%;max-width:none">
+      <div class="node-id">6</div>
+      <div class="node-title">Purchase Timeline</div>
+      <div class="node-desc">MC: Next month / 1-3mo / 3-6mo / 6-12mo / Just exploring</div>
+      <div class="node-tag">Multiple Choice</div>
+    </div>
+  </div>
+  <!-- No path -->
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div class="node node-thankyou" style="width:100%;max-width:none">
+      <div class="node-id" style="background:#1C1B17;color:#E9FE0F">29</div>
+      <div class="node-title">Early Exit</div>
+      <div class="node-desc">→ Thank You screen<br>(no further questions)</div>
+      <div class="node-tag" style="background:rgba(0,0,0,.1)">Terminal</div>
+    </div>
+  </div>
+</div>
+
+<div class="connector"></div>
+
+<!-- S7 Section -->
+<div class="node node-section">
+  <div class="node-id">7</div>
+  <div class="node-title">📋 Employment Details</div>
+  <div class="node-desc">Section divider</div>
+</div>
+<div class="connector"></div>
+
+<!-- S8 -->
+<div class="node node-screen">
+  <div class="node-id">8</div>
+  <div class="node-title">Employment Type</div>
+  <div class="node-desc">MC: Government / MNC / SME / Self-employed / Freelancer</div>
+  <div class="node-tag">Multiple Choice</div>
+</div>
+<div class="connector"></div>
+
+<!-- S9 -->
+<div class="node node-screen">
+  <div class="node-id">9</div>
+  <div class="node-title">Employer Tenure</div>
+  <div class="node-desc">MC: &lt;6 months / 6mo–1yr / 1–3yr / 3yr+</div>
+  <div class="node-tag">Multiple Choice</div>
+</div>
+<div class="connector"></div>
+
+<!-- S10 Section -->
+<div class="node node-section">
+  <div class="node-id">10</div>
+  <div class="node-title">💰 Income Information</div>
+  <div class="node-desc">Section divider</div>
+</div>
+<div class="connector"></div>
+
+<!-- S11 — Conditional -->
+<div class="node node-conditional">
+  <div class="node-id">11</div>
+  <div class="node-title"><span class="diamond"></span>Household Income</div>
+  <div class="node-desc">MC: Sole earner / Spouse salary / Spouse business / Other<br><em>If NOT "sole earner" → Screen 12, else → Screen 13</em></div>
+</div>
+
+<div style="display:flex;width:100%;max-width:520px;position:relative;margin-top:-1px">
+  <svg width="100%" height="60" viewBox="0 0 520 60" preserveAspectRatio="xMidYMid meet" style="display:block">
+    <line x1="260" y1="0" x2="260" y2="14" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="14" x2="140" y2="14" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="140" y1="14" x2="140" y2="60" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="14" x2="380" y2="14" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="380" y1="14" x2="380" y2="60" stroke="#1C1B17" stroke-width="2"/>
+    <rect x="96" y="22" width="88" height="18" rx="9" fill="#d4edda"/>
+    <text x="140" y="35" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#155724">NOT SOLE</text>
+    <rect x="340" y="22" width="80" height="18" rx="9" fill="#f0f0f0"/>
+    <text x="380" y="35" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#666">SOLE EARNER</text>
+  </svg>
+</div>
+
+<div style="display:flex;width:100%;max-width:520px;gap:20px">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div class="node node-screen" style="width:100%;max-width:none">
+      <div class="node-id">12</div>
+      <div class="node-title">Combined Household Income</div>
+      <div class="node-desc">AED input</div>
+      <div class="node-tag">Conditional · Input</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div style="height:100%;display:flex;align-items:center">
+      <div class="skip-connector" style="flex-direction:column">
+        <div style="width:2px;height:40px;background:#ccc;border-left:2px dashed #ccc"></div>
+        <span style="font-size:10px;color:#999">skip</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Merge back -->
+<div class="connector"></div>
+
+<!-- S13 -->
+<div class="node node-screen">
+  <div class="node-id">13</div>
+  <div class="node-title">Variable Income</div>
+  <div class="node-desc">AED input — commissions, bonuses, etc.</div>
+  <div class="node-tag">Input · AED</div>
+</div>
+<div class="connector"></div>
+
+<!-- S14 Section -->
+<div class="node node-section">
+  <div class="node-id">14</div>
+  <div class="node-title">🏦 Financial Commitments</div>
+  <div class="node-desc">Section divider</div>
+</div>
+<div class="connector"></div>
+
+<!-- S15 Conditional -->
+<div class="node node-conditional">
+  <div class="node-id">15</div>
+  <div class="node-title"><span class="diamond"></span>Has Personal Loans?</div>
+  <div class="node-desc">Yes → Screen 16 &nbsp;|&nbsp; No → Screen 17</div>
+</div>
+
+<div style="display:flex;width:100%;max-width:520px;position:relative;margin-top:-1px">
+  <svg width="100%" height="50" viewBox="0 0 520 50" preserveAspectRatio="xMidYMid meet" style="display:block">
+    <line x1="260" y1="0" x2="260" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="140" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="140" y1="12" x2="140" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="380" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="380" y1="12" x2="380" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <rect x="112" y="18" width="56" height="16" rx="8" fill="#d4edda"/>
+    <text x="140" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#155724">YES</text>
+    <rect x="352" y="18" width="56" height="16" rx="8" fill="#f0f0f0"/>
+    <text x="380" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#666">NO</text>
+  </svg>
+</div>
+<div style="display:flex;width:100%;max-width:520px;gap:20px">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div class="node node-screen" style="width:100%;max-width:none">
+      <div class="node-id">16</div>
+      <div class="node-title">Personal Loan Payment</div>
+      <div class="node-desc">AED input — monthly amount</div>
+      <div class="node-tag">Conditional · Input</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center">
+    <div style="width:2px;height:40px;border-left:2px dashed #ccc"></div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- S17 Conditional -->
+<div class="node node-conditional">
+  <div class="node-id">17</div>
+  <div class="node-title"><span class="diamond"></span>Has Car Loans?</div>
+  <div class="node-desc">Yes → Screen 18 &nbsp;|&nbsp; No → Screen 19</div>
+</div>
+
+<div style="display:flex;width:100%;max-width:520px;position:relative;margin-top:-1px">
+  <svg width="100%" height="50" viewBox="0 0 520 50" preserveAspectRatio="xMidYMid meet" style="display:block">
+    <line x1="260" y1="0" x2="260" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="140" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="140" y1="12" x2="140" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="380" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="380" y1="12" x2="380" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <rect x="112" y="18" width="56" height="16" rx="8" fill="#d4edda"/>
+    <text x="140" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#155724">YES</text>
+    <rect x="352" y="18" width="56" height="16" rx="8" fill="#f0f0f0"/>
+    <text x="380" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#666">NO</text>
+  </svg>
+</div>
+<div style="display:flex;width:100%;max-width:520px;gap:20px">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div class="node node-screen" style="width:100%;max-width:none">
+      <div class="node-id">18</div>
+      <div class="node-title">Car Loan Payment</div>
+      <div class="node-desc">AED input — monthly amount</div>
+      <div class="node-tag">Conditional · Input</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center">
+    <div style="width:2px;height:40px;border-left:2px dashed #ccc"></div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- S19 Conditional -->
+<div class="node node-conditional">
+  <div class="node-id">19</div>
+  <div class="node-title"><span class="diamond"></span>Has Credit Cards?</div>
+  <div class="node-desc">Yes → Screen 20 &nbsp;|&nbsp; No → Housing section</div>
+</div>
+
+<div style="display:flex;width:100%;max-width:520px;position:relative;margin-top:-1px">
+  <svg width="100%" height="50" viewBox="0 0 520 50" preserveAspectRatio="xMidYMid meet" style="display:block">
+    <line x1="260" y1="0" x2="260" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="140" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="140" y1="12" x2="140" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="380" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="380" y1="12" x2="380" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <rect x="112" y="18" width="56" height="16" rx="8" fill="#d4edda"/>
+    <text x="140" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#155724">YES</text>
+    <rect x="352" y="18" width="56" height="16" rx="8" fill="#f0f0f0"/>
+    <text x="380" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#666">NO</text>
+  </svg>
+</div>
+<div style="display:flex;width:100%;max-width:520px;gap:20px">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div class="node node-screen" style="width:100%;max-width:none">
+      <div class="node-id">20</div>
+      <div class="node-title">Credit Card Limit</div>
+      <div class="node-desc">AED input — total limit</div>
+      <div class="node-tag">Conditional · Input</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center">
+    <div style="width:2px;height:40px;border-left:2px dashed #ccc"></div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- S21 Section -->
+<div class="node node-section">
+  <div class="node-id">21</div>
+  <div class="node-title">🏠 Housing Costs</div>
+  <div class="node-desc">Section divider</div>
+</div>
+<div class="connector"></div>
+
+<!-- S22 -->
+<div class="node node-screen">
+  <div class="node-id">22</div>
+  <div class="node-title">Current Mortgage Payment</div>
+  <div class="node-desc">AED input — monthly mortgage<br><em style="color:#999">Skipped if URL param <code>has_mortgage=no</code></em></div>
+  <div class="node-tag">Input · AED · Conditional Skip</div>
+</div>
+<div class="connector"></div>
+
+<!-- S23 Conditional -->
+<div class="node node-conditional">
+  <div class="node-id">23</div>
+  <div class="node-title"><span class="diamond"></span>Pays Rent?</div>
+  <div class="node-desc">Yes → Screen 24 &nbsp;|&nbsp; No → Savings section</div>
+</div>
+
+<div style="display:flex;width:100%;max-width:520px;position:relative;margin-top:-1px">
+  <svg width="100%" height="50" viewBox="0 0 520 50" preserveAspectRatio="xMidYMid meet" style="display:block">
+    <line x1="260" y1="0" x2="260" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="140" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="140" y1="12" x2="140" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="260" y1="12" x2="380" y2="12" stroke="#1C1B17" stroke-width="2"/>
+    <line x1="380" y1="12" x2="380" y2="50" stroke="#1C1B17" stroke-width="2"/>
+    <rect x="112" y="18" width="56" height="16" rx="8" fill="#d4edda"/>
+    <text x="140" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#155724">YES</text>
+    <rect x="352" y="18" width="56" height="16" rx="8" fill="#f0f0f0"/>
+    <text x="380" y="29" text-anchor="middle" font-family="Manrope" font-size="9" font-weight="700" fill="#666">NO</text>
+  </svg>
+</div>
+<div style="display:flex;width:100%;max-width:520px;gap:20px">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+    <div class="node node-screen" style="width:100%;max-width:none">
+      <div class="node-id">24</div>
+      <div class="node-title">Rent Payment</div>
+      <div class="node-desc">AED input — monthly rent</div>
+      <div class="node-tag">Conditional · Input</div>
+    </div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center">
+    <div style="width:2px;height:40px;border-left:2px dashed #ccc"></div>
+  </div>
+</div>
+<div class="connector"></div>
+
+<!-- S25 Section -->
+<div class="node node-section">
+  <div class="node-id">25</div>
+  <div class="node-title">💎 Savings & Assets</div>
+  <div class="node-desc">Section divider</div>
+</div>
+<div class="connector"></div>
+
+<!-- S26 -->
+<div class="node node-screen">
+  <div class="node-id">26</div>
+  <div class="node-title">Savings / Liquid Assets</div>
+  <div class="node-desc">MC: &lt;50K / 50–150K / 150–300K / 300K+</div>
+  <div class="node-tag">Multiple Choice</div>
+</div>
+<div class="connector"></div>
+
+<!-- S27 Section -->
+<div class="node node-section">
+  <div class="node-id">27</div>
+  <div class="node-title">🌍 Residency</div>
+  <div class="node-desc">Section divider</div>
+</div>
+<div class="connector"></div>
+
+<!-- S28 -->
+<div class="node node-screen">
+  <div class="node-id">28</div>
+  <div class="node-title">UAE Residency</div>
+  <div class="node-desc">MC: &lt;2 years / 2–5 years / 5+ years</div>
+  <div class="node-tag">Multiple Choice</div>
+</div>
+<div class="connector"></div>
+
+<!-- S29 Thank You -->
+<div class="node node-thankyou">
+  <div class="node-id">29</div>
+  <div class="node-title">🎉 Thank You — Pre-Qualified!</div>
+  <div class="node-desc">Summary card with key details<br>"We'll be in touch within 24 hours"<br><strong>Webhook fires with all collected data</strong></div>
+  <div class="node-tag" style="background:rgba(0,0,0,.1)">Terminal · Webhook</div>
+</div>
+
+<div style="height:60px"></div>
+
+</div><!-- /flow -->
+</div><!-- /canvas -->
+
+<!-- Zoom controls -->
+<div class="zoom-controls">
+  <button class="zoom-btn" onclick="zoom(1.15)" title="Zoom in">+</button>
+  <button class="zoom-btn" onclick="zoom(1/1.15)" title="Zoom out">−</button>
+  <button class="zoom-btn" onclick="resetZoom()" title="Reset" style="font-size:12px">⟲</button>
+</div>
+
+<script>
+let scale = 1;
+const flow = document.getElementById('flow');
+function zoom(factor) {
+  scale = Math.max(0.3, Math.min(2, scale * factor));
+  flow.style.transform = `scale(${scale})`;
+  flow.style.transformOrigin = 'top center';
+}
+function resetZoom() {
+  scale = 1;
+  flow.style.transform = 'none';
+}
+</script>
+</body>
+</html>

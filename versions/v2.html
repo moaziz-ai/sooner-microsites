@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sooner – Own Your Home Sooner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Manrope',sans-serif;background:#F5F4F0;color:#1C1B17;font-size:16px;line-height:1.6;overflow-x:hidden;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+        /* Progress */
+        .progress-bar{position:fixed;top:0;left:0;width:100%;height:2px;background:rgba(28,27,23,0.06);z-index:1000;transition:opacity .3s}
+        .progress-fill{height:100%;background:#E9FE0F;width:0%;transition:width .8s cubic-bezier(.4,0,.2,1)}
+
+        /* Layout */
+        .container{min-height:100vh;display:flex;flex-direction:column}
+        .content{flex:1;display:flex;align-items:center;justify-content:center;padding:56px 24px 24px;min-height:100vh}
+
+        /* Back button */
+        .nav-container{position:fixed;top:24px;left:24px;z-index:1000}
+        .back-btn{background:#FFFFFF;border:1px solid #E0E0E0;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:#1C1B17}
+        .back-btn:hover{border-color:#1C1B17;transform:translateY(-1px)}
+
+        /* Question container */
+        .q-wrap{max-width:640px;width:100%;text-align:center;opacity:0;transform:translateY(24px);animation:slideIn .4s ease forwards}
+        @keyframes slideIn{to{opacity:1;transform:translateY(0)}}
+        .q-exit{animation:slideOut .25s ease forwards}
+        @keyframes slideOut{to{opacity:0;transform:translateY(-16px)}}
+
+        /* Typography */
+        .q-title{font-size:clamp(24px,4.5vw,34px);font-weight:700;color:#1C1B17;line-height:1.15;margin-bottom:12px;letter-spacing:-.02em}
+        .q-sub{font-size:16px;color:#6B6B6B;margin-bottom:24px;line-height:1.5;max-width:520px;margin-left:auto;margin-right:auto}
+        .highlight{background-image:linear-gradient(transparent 35%,#E9FE0F 35%,#E9FE0F 82%,transparent 82%);padding:0 4px;font-weight:700}
+        .section-label{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#6B6B6B;margin-bottom:12px}
+
+        /* Logo */
+        .logo{font-size:18px;font-weight:600;letter-spacing:-.02em;color:#1C1B17;position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:1001}
+
+        /* Buttons */
+        .btn{background:#E9FE0F;color:#1C1B17;border:none;border-radius:8px;padding:14px 28px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;margin-top:16px}
+        .btn:hover{background:#E2F55C}
+        .btn:active{transform:scale(.98)}
+        .btn-lg{padding:16px 36px;font-size:16px}
+
+        /* Input — bottom border typeform style */
+        .input-wrap{max-width:400px;margin:0 auto;position:relative}
+        .input-prefix{position:absolute;left:0;bottom:20px;font-size:24px;font-weight:600;color:#6B6B6B}
+        .input-field{width:100%;background:transparent;border:none;border-bottom:2px solid #E0E0E0;padding:16px 0 16px 60px;font-size:28px;font-weight:600;font-family:inherit;color:#1C1B17;outline:none;transition:border-color .2s}
+        .input-field:focus{border-bottom-color:#1C1B17}
+        .input-field::placeholder{color:#D0D0D0;font-weight:400}
+        .input-hint{font-size:13px;color:#6B6B6B;margin-top:12px;text-align:left}
+
+        /* Choice cards */
+        .choices{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+        .choice{background:#FFFFFF;border:1.5px solid #E0E0E0;border-radius:8px;padding:18px 24px;cursor:pointer;transition:all .2s;text-align:left;position:relative}
+        .choice:hover{transform:translateY(-2px);border-color:#1C1B17}
+        .choice.selected{border-color:#E9FE0F;border-width:2px;background:#FEFFF0}
+        .choice-label{font-size:15px;font-weight:500;color:#1C1B17}
+        .choice-key{position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:600;color:#6B6B6B;background:#F5F4F0;border-radius:4px;padding:2px 8px}
+
+        /* Yes/No */
+        .yn-wrap{display:flex;gap:16px;justify-content:center}
+        .yn-btn{background:#FFFFFF;border:1.5px solid #E0E0E0;border-radius:8px;padding:18px 40px;font-size:15px;font-weight:500;font-family:inherit;color:#1C1B17;cursor:pointer;transition:all .2s;min-width:120px}
+        .yn-btn:hover{border-color:#1C1B17;transform:translateY(-2px)}
+        .yn-btn.selected{background:#E9FE0F;border-color:#E9FE0F;font-weight:600}
+
+        /* Calculator cards */
+        .calc-card{background:#FFFFFF;border:1px solid #E0E0E0;border-radius:12px;padding:20px 24px;margin:16px auto;max-width:480px;text-align:left}
+        .calc-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:13px}
+        .calc-row .label{color:#6B6B6B}
+        .calc-row .value{font-weight:600;color:#1C1B17;font-variant-numeric:tabular-nums}
+        .calc-divider{border:none;border-top:1px solid #E0E0E0;margin:8px 0}
+        .calc-total{font-size:13px;font-weight:600}
+        .calc-total .value{font-size:clamp(28px,4.5vw,40px);font-weight:800;color:#1C1B17;letter-spacing:-.02em}
+        .calc-total .label{font-size:14px;color:#1C1B17;font-weight:600}
+
+        /* Sooner reveal */
+        .reveal-amount{font-size:clamp(36px,6vw,52px);font-weight:800;color:#1C1B17;letter-spacing:-.03em;margin:16px 0}
+        .reveal-sub{font-size:18px;color:#6B6B6B;margin-bottom:8px}
+        .reveal-monthly{background:#FFFFFF;border:1px solid #E0E0E0;border-radius:8px;padding:20px 28px;display:inline-block;margin:24px 0;font-size:15px;color:#1C1B17}
+        .reveal-monthly strong{font-weight:700}
+
+        /* Thank you */
+        .thanks-badge{display:inline-block;background:#E9FE0F;border-radius:50%;width:64px;height:64px;line-height:64px;font-size:32px;margin-bottom:24px}
+        .summary-card{background:#FFFFFF;border:1px solid #E0E0E0;border-radius:12px;padding:28px;margin:32px auto;max-width:400px;text-align:left}
+        .summary-row{display:flex;justify-content:space-between;padding:8px 0;font-size:14px;border-bottom:1px solid #F5F4F0}
+        .summary-row:last-child{border:none}
+        .summary-row .s-label{color:#6B6B6B}
+        .summary-row .s-value{font-weight:600}
+
+        /* Celebration animation */
+        @keyframes highlightSweep{0%{background-size:0% 100%}100%{background-size:100% 100%}}
+        .celebrate-title{background-image:linear-gradient(transparent 35%,#E9FE0F 35%,#E9FE0F 82%,transparent 82%);background-repeat:no-repeat;background-position:left center;background-size:0% 100%;animation:highlightSweep .8s .3s ease forwards}
+
+        /* Hidden */
+        .hidden{display:none!important}
+
+        /* Shake */
+        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+        /* Mobile */
+        @media(max-width:600px){
+            .content{padding:48px 16px 16px}
+            .q-title{font-size:clamp(20px,5vw,28px);margin-bottom:8px}
+            .q-sub{font-size:14px;margin-bottom:16px}
+            .yn-wrap{flex-direction:row;gap:12px}
+            .yn-btn{flex:1;padding:14px 16px;font-size:14px;min-width:auto}
+            .calc-card{padding:16px;border-radius:10px}
+            .calc-row{padding:4px 0;font-size:12px}
+            .calc-row .value{font-size:12px}
+            .calc-total .value{font-size:clamp(24px,6vw,32px)}
+            .calc-total .label{font-size:12px}
+            .choice-key{display:none}
+            .choice{padding:14px 18px}
+            .choice-label{font-size:14px}
+            .input-field{font-size:22px}
+            .input-prefix{font-size:18px}
+            .btn{padding:14px 24px;font-size:14px;margin-top:12px}
+            .btn-lg{padding:14px 28px;font-size:14px}
+            .logo{font-size:16px;top:14px}
+            .nav-container{top:14px;left:16px}
+            .back-btn{width:36px;height:36px}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="logo">Sooner</div>
+        <div class="nav-container">
+            <button class="back-btn hidden" id="backBtn" aria-label="Go back">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+            </button>
+        </div>
+        <div class="content">
+            <div class="q-wrap" id="qContainer"></div>
+        </div>
+    </div>
+
+<script>
+const WEBHOOK_URL = '';
+
+let idx = 0, answers = {}, hiddenFields = {}, variables = {}, path = [], totalQ = 0;
+
+// URL params
+function extractHidden() {
+    const p = new URLSearchParams(location.search);
+    ['lead_id','email','has_mortgage','original_income','area'].forEach(f => {
+        const v = p.get(f); if (v !== null) hiddenFields[f] = v;
+    });
+}
+
+function initVars() {
+    variables = {budget_aed:0,budget_k:0,budget_m:0,closing_cost:0,closing_cost_k:0,closing_cost_m:0,
+        current_upfront:0,current_upfront_k:0,current_upfront_m:0,down_payment:0,down_payment_k:0,down_payment_m:0,
+        loan_amount:0,mortgage_monthly:0,mortgage_monthly_k:0,mortgage_monthly_m:0,
+        reduced_upfront:0,reduced_upfront_k:0,reduced_upfront_m:0,
+        savings:0,savings_k:0,savings_m:0,score:0,
+        sooner_monthly:0,sooner_monthly_k:0,sooner_monthly_m:0,
+        total_monthly:0,total_monthly_k:0,total_monthly_m:0,
+        // breakdown items
+        dld_fee:0,agency_fee:0,bank_arrangement:0,mortgage_reg:0,valuation:0,trustee:0,noc:0,conveyancing:0
+    };
+}
+
+function calc(budget) {
+    const v = variables;
+    v.budget_aed = budget;
+    v.budget_k = Math.round(budget/1000);
+    v.budget_m = Math.round(budget/1e6*100)/100;
+    v.down_payment = budget * 0.2;
+    v.down_payment_k = Math.round(v.down_payment/1000);
+    v.down_payment_m = Math.round(v.down_payment/1e6*100)/100;
+
+    // Closing cost breakdown (Mo's formula Feb 2026)
+    v.dld_fee = budget * 0.04 + 580;
+    v.agency_fee = budget * 0.021;
+    v.bank_arrangement = budget * 0.0105;
+    v.mortgage_reg = budget * 0.0025 + 290;
+    v.valuation = 3150;
+    v.trustee = budget > 500000 ? 4200 : 2100;
+    v.noc = 2000;
+    v.conveyancing = budget * 0.0039375;
+
+    v.closing_cost = v.dld_fee + v.agency_fee + v.bank_arrangement + v.mortgage_reg + v.valuation + v.trustee + v.noc + v.conveyancing;
+    v.closing_cost_k = Math.round(v.closing_cost/1000);
+    v.closing_cost_m = Math.round(v.closing_cost/1e6*100)/100;
+
+    v.current_upfront = v.down_payment + v.closing_cost;
+    v.current_upfront_k = Math.round(v.current_upfront/1000);
+    v.current_upfront_m = Math.round(v.current_upfront/1e6*100)/100;
+
+    // Sooner covers closing costs, paid back over 60 months
+    v.savings = v.closing_cost;
+    v.savings_k = Math.round(v.savings/1000);
+    v.savings_m = Math.round(v.savings/1e6*100)/100;
+
+    v.sooner_monthly = v.closing_cost / 60;
+    v.sooner_monthly_k = Math.round(v.sooner_monthly/1000*100)/100;
+    v.sooner_monthly_m = Math.round(v.sooner_monthly/1e6*100)/100;
+
+    v.reduced_upfront = v.down_payment;
+    v.reduced_upfront_k = Math.round(v.reduced_upfront/1000);
+    v.reduced_upfront_m = Math.round(v.reduced_upfront/1e6*100)/100;
+
+    v.loan_amount = budget * 0.8;
+    v.mortgage_monthly = v.loan_amount * 0.00514131199602351;
+    v.mortgage_monthly_k = Math.round(v.mortgage_monthly/1000*100)/100;
+    v.mortgage_monthly_m = Math.round(v.mortgage_monthly/1e6*100)/100;
+
+    v.total_monthly = v.mortgage_monthly + v.sooner_monthly;
+    v.total_monthly_k = Math.round(v.total_monthly/1000*100)/100;
+    v.total_monthly_m = Math.round(v.total_monthly/1e6*100)/100;
+}
+
+function fmt(n) { return n.toLocaleString('en-US', {maximumFractionDigits:0}); }
+function fmtK(n) { return Math.round(n/1000); }
+
+// Questions definition
+const questions = [
+    {id:'welcome',type:'welcome'},
+    {id:'property_budget_aed',ref:'property_budget_aed',type:'number',title:'What\'s your <span class="highlight">property budget</span>?',sub:'Enter the price of the home you\'re considering.',prefix:'AED',placeholder:'1,000,000',validation:{min:100000,max:50000000}},
+    {id:'cost_breakdown',type:'cost_breakdown'},
+    {id:'sooner_reveal',type:'sooner_reveal'},
+    {id:'accept_sooner_offer',ref:'accept_sooner_offer',type:'yes_no',title:'Would you like to proceed with Sooner?'},
+    {id:'property_timeline',ref:'property_timeline',type:'mc',title:'When are you looking to <span class="highlight">purchase</span>?',choices:[
+        {id:'timeline_3m',label:'Within the next month',ref:'timeline_3m'},
+        {id:'timeline_1_3m',label:'1–3 months',ref:'ace08040-b55d-4b7f-9d7c-569f698aa9f9'},
+        {id:'timeline_6m',label:'3–6 months',ref:'timeline_6m'},
+        {id:'timeline_12m',label:'6–12 months',ref:'timeline_12m'},
+        {id:'timeline_exploring',label:'Just exploring for now',ref:'timeline_exploring'}
+    ]},
+    {id:'section_work',type:'section',label:'Employment details'},
+    {id:'employment_type',ref:'employment_type',type:'mc',title:'What best describes your <span class="highlight">employment</span>?',choices:[
+        {id:'emp_govt',label:'Salaried — Government / Semi-Government',ref:'emp_govt'},
+        {id:'emp_mnc',label:'Salaried — MNC / Large Company (50+ employees)',ref:'emp_mnc'},
+        {id:'emp_sme',label:'Salaried — SME / Startup (under 50)',ref:'emp_sme'},
+        {id:'emp_self',label:'Self-Employed / Business Owner',ref:'emp_self'},
+        {id:'emp_freelance',label:'Freelancer / Contract-based',ref:'emp_freelance'}
+    ]},
+    {id:'employer_tenure',ref:'employer_tenure',type:'mc',title:'How long with your current employer?',choices:[
+        {id:'tenure_lt6m',label:'Less than 6 months',ref:'tenure_lt6m'},
+        {id:'tenure_6m1y',label:'6 months – 1 year',ref:'tenure_6m1y'},
+        {id:'tenure_1y3y',label:'1 – 3 years',ref:'tenure_1y3y'},
+        {id:'tenure_3yplus',label:'3+ years',ref:'tenure_3yplus'}
+    ]},
+    {id:'section_income',type:'section',label:'Income information'},
+    {id:'household_income',ref:'household_income',type:'mc',title:'Does anyone else in your household <span class="highlight">contribute income</span>?',choices:[
+        {id:'hh_no',label:'No — I\'m the sole earner',ref:'hh_no'},
+        {id:'hh_spouse_salary',label:'Yes — spouse/partner earns a salary',ref:'hh_spouse_salary'},
+        {id:'hh_spouse_biz',label:'Yes — spouse/partner has business/freelance income',ref:'hh_spouse_biz'},
+        {id:'hh_other',label:'Yes — other household members contribute',ref:'hh_other'}
+    ]},
+    {id:'household_income_total',ref:'household_income_total',type:'number',title:'What\'s the total combined <span class="highlight">monthly household income</span>?',prefix:'AED',placeholder:'25,000',validation:{min:0,max:1000000}},
+    {id:'variable_income',ref:'variable_income',type:'number',title:'How much comes from <span class="highlight">variable pay</span>?',sub:'Commissions, bonuses, overtime. Enter 0 if fully fixed.',prefix:'AED',placeholder:'0',validation:{min:0,max:1000000}},
+    {id:'section_debt',type:'section',label:'Financial commitments'},
+    {id:'has_personal_loan',ref:'has_personal_loan',type:'yes_no',title:'Do you have any <span class="highlight">personal loans</span>?'},
+    {id:'personal_loan_payment',ref:'personal_loan_payment',type:'number',title:'Monthly personal loan payment?',prefix:'AED',placeholder:'2,000',validation:{min:0,max:500000}},
+    {id:'has_car_loan',ref:'has_car_loan',type:'yes_no',title:'Do you have any <span class="highlight">car loans</span>?'},
+    {id:'car_loan_payment',ref:'car_loan_payment',type:'number',title:'Monthly car loan payment?',prefix:'AED',placeholder:'2,500',validation:{min:0,max:500000}},
+    {id:'has_credit_card',ref:'has_credit_card',type:'yes_no',title:'Do you have any <span class="highlight">credit cards</span>?'},
+    {id:'credit_card_payment',ref:'credit_card_payment',type:'number',title:'Total credit card limit?',prefix:'AED',placeholder:'30,000',validation:{min:0,max:500000}},
+    {id:'section_housing',type:'section',label:'Housing costs'},
+    {id:'mortgage_payment',ref:'mortgage_payment',type:'number',title:'Current monthly <span class="highlight">mortgage payment</span>?',sub:'Combined total if multiple mortgages.',prefix:'AED',placeholder:'5,000',validation:{min:0,max:500000}},
+    {id:'has_rent',ref:'has_rent',type:'yes_no',title:'Do you currently <span class="highlight">pay rent</span>?'},
+    {id:'rent_payment',ref:'rent_payment',type:'number',title:'Monthly rent payment?',prefix:'AED',placeholder:'6,000',validation:{min:0,max:500000}},
+    {id:'section_savings',type:'section',label:'Savings & assets'},
+    {id:'savings',ref:'savings',type:'mc',title:'How much in <span class="highlight">savings and liquid assets</span>?',sub:'Bank balance, stocks, easily accessible funds.',choices:[
+        {id:'sav_lt50k',label:'Less than AED 50,000',ref:'sav_lt50k'},
+        {id:'sav_50_150k',label:'AED 50,000 – 150,000',ref:'sav_50_150k'},
+        {id:'sav_150_300k',label:'AED 150,000 – 300,000',ref:'sav_150_300k'},
+        {id:'sav_gt300k',label:'More than AED 300,000',ref:'sav_gt300k'}
+    ]},
+    {id:'section_final',type:'section',label:'Residency'},
+    {id:'uae_residency',ref:'uae_residency',type:'mc',title:'How long have you lived in the <span class="highlight">UAE</span>?',choices:[
+        {id:'res_lt2y',label:'Less than 2 years',ref:'res_lt2y'},
+        {id:'res_2_5y',label:'2 – 5 years',ref:'res_2_5y'},
+        {id:'res_5yplus',label:'5+ years',ref:'res_5yplus'}
+    ]},
+    {id:'thanks',type:'thanks'}
+];
+
+const qMap = {};
+questions.forEach(q => qMap[q.id] = q);
+
+function buildPath() {
+    path = ['welcome','property_budget_aed','cost_breakdown','sooner_reveal','accept_sooner_offer'];
+    if (answers.accept_sooner_offer === false) { path.push('thanks'); totalQ = path.length - 2; return; }
+    path.push('property_timeline','section_work','employment_type','employer_tenure','section_income','household_income');
+    if (answers.household_income && answers.household_income !== 'hh_no') path.push('household_income_total');
+    path.push('variable_income','section_debt','has_personal_loan');
+    if (answers.has_personal_loan === true) path.push('personal_loan_payment');
+    path.push('has_car_loan');
+    if (answers.has_car_loan === true) path.push('car_loan_payment');
+    path.push('has_credit_card');
+    if (answers.has_credit_card === true) path.push('credit_card_payment');
+    path.push('section_housing');
+    if (hiddenFields.has_mortgage !== 'no') path.push('mortgage_payment');
+    path.push('has_rent');
+    if (answers.has_rent === true) path.push('rent_payment');
+    path.push('section_savings','savings','section_final','uae_residency','thanks');
+    totalQ = path.filter(id => !['welcome','thanks'].includes(id) && qMap[id]?.type !== 'section').length;
+}
+
+function curQ() { return qMap[path[idx]]; }
+
+function updateProgress() {
+    const q = curQ();
+    if (!q || q.type === 'welcome' || q.type === 'thanks') {
+        document.getElementById('progressFill').style.width = q?.type === 'thanks' ? '100%' : '0%';
+        return;
+    }
+    const answered = path.slice(0, idx).filter(id => !['welcome','thanks'].includes(id) && qMap[id]?.type !== 'section').length;
+    document.getElementById('progressFill').style.width = `${Math.min((answered/totalQ)*100,100)}%`;
+}
+
+function updateBack() {
+    document.getElementById('backBtn').classList.toggle('hidden', idx === 0);
+}
+
+function render() {
+    const q = curQ();
+    if (!q) return;
+    const c = document.getElementById('qContainer');
+    c.classList.add('q-exit');
+    setTimeout(() => {
+        c.className = '';
+        let h = '';
+        switch(q.type) {
+        case 'welcome':
+            h = `<div style="text-align:center">
+                <h1 class="q-title" style="font-size:clamp(32px,6vw,48px)">Own your home <span class="highlight">sooner</span></h1>
+                <p class="q-sub">Pre-qualify in 2 minutes. See how much Sooner can save you.</p>
+                <button class="btn btn-lg" onclick="next()">Let's go →</button>
+            </div>`; break;
+        case 'number':
+            h = `<div>
+                <h2 class="q-title">${q.title}</h2>
+                ${q.sub ? `<p class="q-sub">${q.sub}</p>` : ''}
+                <div class="input-wrap">
+                    <span class="input-prefix">${q.prefix||''}</span>
+                    <input class="input-field" id="numInput" type="text" inputmode="numeric" placeholder="${q.placeholder||''}" value="${answers[q.ref] ? fmt(answers[q.ref]) : ''}">
+                </div>
+                <button class="btn" id="numSubmit">Continue →</button>
+            </div>`; break;
+        case 'mc':
+            h = `<div>
+                <h2 class="q-title">${q.title}</h2>
+                ${q.sub ? `<p class="q-sub">${q.sub}</p>` : ''}
+                <div class="choices">${q.choices.map((c,i) =>
+                    `<div class="choice${answers[q.ref]===c.ref?' selected':''}" data-ref="${c.ref}" data-i="${i}">
+                        <span class="choice-label">${c.label}</span>
+                        <span class="choice-key">${i+1}</span>
+                    </div>`).join('')}
+                </div>
+            </div>`; break;
+        case 'yes_no':
+            h = `<div>
+                <h2 class="q-title">${q.title}</h2>
+                <div class="yn-wrap">
+                    <button class="yn-btn${answers[q.ref]===true?' selected':''}" data-v="true">Yes</button>
+                    <button class="yn-btn${answers[q.ref]===false?' selected':''}" data-v="false">No</button>
+                </div>
+            </div>`; break;
+        case 'section':
+            h = `<div>
+                <p class="section-label">${q.label}</p>
+                <h2 class="q-title" style="margin-bottom:32px">Let's talk about your ${q.label.toLowerCase()}</h2>
+                <button class="btn" onclick="next()">Continue →</button>
+            </div>`; break;
+        case 'cost_breakdown':
+            const v = variables;
+            h = `<div>
+                <h2 class="q-title">To buy this home today, <span class="highlight">you need</span>:</h2>
+                <p class="q-sub">Based on a property budget of AED ${fmt(v.budget_aed)}</p>
+                <div class="calc-card">
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#6B6B6B;margin-bottom:8px">Down payment</div>
+                    <div class="calc-row"><span class="label">20% down payment</span><span class="value">AED ${fmt(v.down_payment)}</span></div>
+                    <hr class="calc-divider">
+                    <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#6B6B6B;margin-bottom:6px">Closing costs</div>
+                    <div class="calc-row"><span class="label">DLD fee (4% + 580)</span><span class="value">AED ${fmt(v.dld_fee)}</span></div>
+                    <div class="calc-row"><span class="label">Agency commission (2.1%)</span><span class="value">AED ${fmt(v.agency_fee)}</span></div>
+                    <div class="calc-row"><span class="label">Bank arrangement (1.05%)</span><span class="value">AED ${fmt(v.bank_arrangement)}</span></div>
+                    <div class="calc-row"><span class="label">Mortgage registration</span><span class="value">AED ${fmt(v.mortgage_reg)}</span></div>
+                    <div class="calc-row"><span class="label">Valuation</span><span class="value">AED ${fmt(v.valuation)}</span></div>
+                    <div class="calc-row"><span class="label">Trustee</span><span class="value">AED ${fmt(v.trustee)}</span></div>
+                    <div class="calc-row"><span class="label">NOC</span><span class="value">AED ${fmt(v.noc)}</span></div>
+                    <div class="calc-row"><span class="label">Conveyancing fee <span style="font-size:11px;color:#9B9B9B">(charged by all brokers)</span></span><span class="value">AED ${fmt(v.conveyancing)}</span></div>
+                    <div class="calc-row" style="padding-top:4px;border-top:1px solid #E0E0E0;margin-top:4px"><span class="label" style="font-weight:600;color:#1C1B17">Closing costs</span><span class="value" style="font-size:15px">AED ${fmt(v.closing_cost)}</span></div>
+                    <hr class="calc-divider" style="border-top:2px solid #1C1B17;margin:6px 0">
+                    <div class="calc-row calc-total" style="padding-top:4px">
+                        <span class="label">Total upfront</span>
+                        <span class="value">AED ${fmt(v.current_upfront)}</span>
+                    </div>
+                </div>
+                <p style="font-size:12px;color:#6B6B6B;margin-top:8px">*Actual closing fees calculated per final deal terms</p>
+                <button class="btn btn-lg" onclick="next()">You're eligible for AED ${fmtK(v.savings)}K in support →</button>
+            </div>`; break;
+        case 'sooner_reveal': {
+            const rv = variables;
+            h = `<div>
+                <h2 class="q-title">Sooner pays <span class="highlight">AED ${fmt(rv.savings)}</span> towards your upfront costs.</h2>
+                <div class="reveal-monthly" style="margin-top:32px">You pay it back: <strong>AED ${fmt(Math.round(rv.sooner_monthly))}/mo for 60 months</strong></div>
+                <p style="font-size:12px;color:#6B6B6B;margin-top:16px">*Actual closing fees calculated per final deal terms</p>
+                <button class="btn btn-lg" onclick="next()">I'm interested — let's continue →</button>
+            </div>`; } break;
+        case 'thanks':
+            const summaryLines = [];
+            if (variables.budget_aed) summaryLines.push(['Budget', `AED ${fmt(variables.budget_aed)}`]);
+            if (variables.savings) summaryLines.push(['Sooner support', `AED ${fmt(variables.savings)}`]);
+            if (answers.employment_type) {
+                const empQ = qMap['employment_type'];
+                const empChoice = empQ.choices.find(c=>c.ref===answers.employment_type);
+                if (empChoice) summaryLines.push(['Employment', empChoice.label.split('—')[0].trim()]);
+            }
+            if (answers.uae_residency) {
+                const resQ = qMap['uae_residency'];
+                const resChoice = resQ.choices.find(c=>c.ref===answers.uae_residency);
+                if (resChoice) summaryLines.push(['UAE residency', resChoice.label]);
+            }
+            h = `<div style="text-align:center">
+                <div class="thanks-badge">✓</div>
+                <h1 class="q-title celebrate-title" style="font-size:clamp(28px,5vw,40px)">You're pre-qualified!</h1>
+                <p class="q-sub">We'll be in touch within 24 hours.</p>
+                ${summaryLines.length ? `<div class="summary-card">${summaryLines.map(([l,v])=>`<div class="summary-row"><span class="s-label">${l}</span><span class="s-value">${v}</span></div>`).join('')}</div>` : ''}
+            </div>`; break;
+        }
+        c.innerHTML = h;
+        setTimeout(() => c.classList.add('q-wrap'), 20);
+        bind();
+        updateProgress();
+        updateBack();
+    }, 250);
+}
+
+function bind() {
+    const q = curQ();
+    if (q.type === 'number') {
+        const inp = document.getElementById('numInput');
+        const sub = document.getElementById('numSubmit');
+        inp.addEventListener('input', () => {
+            let raw = inp.value.replace(/[^0-9]/g,'');
+            if (raw) inp.value = parseInt(raw).toLocaleString('en-US');
+        });
+        const submit = () => {
+            const val = parseFloat(inp.value.replace(/,/g,''));
+            if (isNaN(val) || (q.validation && (val < q.validation.min || val > q.validation.max))) {
+                inp.style.animation = 'shake .4s ease'; setTimeout(()=>inp.style.animation='',400); return;
+            }
+            answers[q.ref] = val;
+            if (q.ref === 'property_budget_aed') { calc(val); buildPath(); }
+            next();
+        };
+        sub.addEventListener('click', submit);
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
+        setTimeout(() => inp.focus(), 350);
+    }
+    if (q.type === 'mc') {
+        document.querySelectorAll('.choice').forEach(el => {
+            el.addEventListener('click', () => {
+                answers[q.ref] = el.dataset.ref;
+                document.querySelectorAll('.choice').forEach(c=>c.classList.remove('selected'));
+                el.classList.add('selected');
+                setTimeout(() => { buildPath(); next(); }, 300);
+            });
+        });
+        numKeyHandler = e => {
+            const n = parseInt(e.key);
+            if (n >= 1 && n <= q.choices.length) {
+                const el = document.querySelector(`[data-i="${n-1}"]`);
+                if (el) el.click();
+            }
+        };
+        document.addEventListener('keypress', numKeyHandler);
+    }
+    if (q.type === 'yes_no') {
+        document.querySelectorAll('.yn-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const val = btn.dataset.v === 'true';
+                answers[q.ref] = val;
+                document.querySelectorAll('.yn-btn').forEach(b=>b.classList.remove('selected'));
+                btn.classList.add('selected');
+                setTimeout(() => { buildPath(); next(); }, 300);
+            });
+        });
+    }
+}
+
+let numKeyHandler = null;
+
+function next() {
+    if (numKeyHandler) { document.removeEventListener('keypress', numKeyHandler); numKeyHandler = null; }
+    idx++;
+    if (idx >= path.length) { submitForm(); return; }
+    render();
+}
+
+function prev() {
+    if (idx > 0) {
+        if (numKeyHandler) { document.removeEventListener('keypress', numKeyHandler); numKeyHandler = null; }
+        idx--;
+        render();
+    }
+}
+
+async function submitForm() {
+    if (!WEBHOOK_URL) { console.log('Form data:', {answers,hiddenFields,variables}); return; }
+    try {
+        await fetch(WEBHOOK_URL, {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({answers,hiddenFields,variables,timestamp:new Date().toISOString()})
+        });
+    } catch(e) { console.error('Submit error:', e); }
+}
+
+function init() {
+    extractHidden();
+    initVars();
+    buildPath();
+    render();
+    document.getElementById('backBtn').addEventListener('click', prev);
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { const q = curQ(); if (q && q.type !== 'welcome' && q.type !== 'thanks') prev(); }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="/favicon.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sooner Form — Version History</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;background:#F5F4F0;color:#1C1B17;min-height:100vh}
+
+.header{background:#1C1B17;color:#FFFFFF;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:16px}
+.logo{font-size:18px;font-weight:600;letter-spacing:-.02em}
+.badge{background:#E9FE0F;color:#1C1B17;font-size:11px;font-weight:600;padding:3px 10px;border-radius:4px}
+.header-right{display:flex;gap:12px;align-items:center}
+.header-link{color:#6B6B6B;font-size:13px;font-weight:500;text-decoration:none;transition:color .2s}
+.header-link:hover{color:#FFFFFF}
+.header-link.active{color:#E9FE0F}
+
+.tabs-bar{position:fixed;top:56px;left:0;right:0;background:#FFFFFF;border-bottom:1px solid #E0E0E0;z-index:99;display:flex;align-items:center;padding:0 24px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs-bar::-webkit-scrollbar{display:none}
+.tab{padding:14px 20px;font-size:13px;font-weight:500;color:#6B6B6B;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all .2s;position:relative}
+.tab:hover{color:#1C1B17}
+.tab.active{color:#1C1B17;border-bottom-color:#E9FE0F;font-weight:600}
+.tab .latest-dot{display:inline-block;width:6px;height:6px;background:#E9FE0F;border-radius:50%;margin-left:6px;vertical-align:middle}
+
+.main{padding-top:108px}
+
+/* Split view */
+.split{display:flex;height:calc(100vh - 108px)}
+.panel-left{flex:1;border-right:1px solid #E0E0E0;display:flex;flex-direction:column}
+.panel-right{width:360px;background:#FFFFFF;overflow-y:auto;padding:24px}
+
+.preview-frame{flex:1;border:none;width:100%;height:100%}
+
+/* Version details */
+.detail-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#6B6B6B;margin-bottom:6px;margin-top:20px}
+.detail-label:first-child{margin-top:0}
+.detail-value{font-size:15px;font-weight:500;color:#1C1B17;line-height:1.5}
+.detail-notes{font-size:14px;color:#6B6B6B;line-height:1.6}
+
+.action-btn{display:inline-flex;align-items:center;gap:6px;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;border:none;margin-top:16px;width:100%;justify-content:center}
+.action-btn.primary{background:#E9FE0F;color:#1C1B17}
+.action-btn.primary:hover{background:#E2F55C}
+.action-btn.secondary{background:#FFFFFF;color:#1C1B17;border:1px solid #E0E0E0}
+.action-btn.secondary:hover{border-color:#1C1B17}
+.action-btn.danger{background:#FFFFFF;color:#D32F2F;border:1px solid #E0E0E0}
+.action-btn.danger:hover{border-color:#D32F2F}
+
+.status-live{display:inline-flex;align-items:center;gap:6px;background:#E9FE0F;color:#1C1B17;font-size:12px;font-weight:600;padding:4px 12px;border-radius:4px}
+.status-live::before{content:'';width:6px;height:6px;background:#1C1B17;border-radius:50%}
+.status-archived{display:inline-flex;align-items:center;gap:6px;color:#6B6B6B;font-size:12px;font-weight:500}
+
+.divider{border:none;border-top:1px solid #E0E0E0;margin:20px 0}
+
+/* Mobile */
+@media(max-width:768px){
+    .split{flex-direction:column}
+    .panel-right{width:100%;height:auto;max-height:40vh;border-top:1px solid #E0E0E0;border-right:none}
+    .panel-left{min-height:50vh}
+    .header{padding:12px 16px}
+    .tabs-bar{padding:0 16px}
+    .panel-right{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="header-left">
+        <span class="logo">Sooner</span>
+        <span class="badge">FORM VERSIONS</span>
+    </div>
+    <div class="header-right">
+        <a href="flowchart.html" class="header-link">Flowchart ↗</a>
+        <a href="#" class="header-link" id="openLive">Live form ↗</a>
+    </div>
+</div>
+
+<div class="tabs-bar" id="tabsBar"></div>
+
+<div class="main">
+    <div class="split">
+        <div class="panel-left">
+            <iframe class="preview-frame" id="previewFrame" src=""></iframe>
+        </div>
+        <div class="panel-right" id="detailPanel"></div>
+    </div>
+</div>
+
+<script>
+let versions = [];
+let activeIdx = 0;
+
+async function init() {
+    const res = await fetch('versions.json?t=' + Date.now());
+    versions = await res.json();
+    
+    // Find latest
+    const latestIdx = versions.findIndex(v => v.latest);
+    activeIdx = latestIdx >= 0 ? latestIdx : versions.length - 1;
+    
+    // Set live link
+    const latestV = versions[latestIdx >= 0 ? latestIdx : versions.length - 1];
+    document.getElementById('openLive').href = latestV.file;
+    document.getElementById('openLive').setAttribute('target', '_blank');
+    document.getElementById('openLive').target = '_blank';
+    
+    renderTabs();
+    selectVersion(activeIdx);
+}
+
+function renderTabs() {
+    const bar = document.getElementById('tabsBar');
+    bar.innerHTML = versions.map((v, i) => 
+        `<div class="tab${i === activeIdx ? ' active' : ''}" data-i="${i}">
+            ${v.version.toUpperCase()}${v.latest ? '<span class="latest-dot"></span>' : ''}
+        </div>`
+    ).join('');
+    
+    bar.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => selectVersion(parseInt(tab.dataset.i)));
+    });
+}
+
+function selectVersion(i) {
+    activeIdx = i;
+    const v = versions[i];
+    
+    // Update iframe
+    document.getElementById('previewFrame').src = v.file;
+    
+    // Update tabs
+    document.querySelectorAll('.tab').forEach((t, idx) => {
+        t.classList.toggle('active', idx === i);
+    });
+    
+    // Update detail panel
+    const panel = document.getElementById('detailPanel');
+    panel.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:20px;font-weight:700">${v.version.toUpperCase()}</span>
+            ${v.latest ? '<span class="status-live">LIVE</span>' : '<span class="status-archived">Archived</span>'}
+        </div>
+        <div style="font-size:15px;font-weight:500;color:#1C1B17">${v.label}</div>
+        
+        <div class="detail-label">Date</div>
+        <div class="detail-value">${v.date}</div>
+        
+        <div class="detail-label">Changes</div>
+        <div class="detail-notes">${v.notes}</div>
+        
+        <hr class="divider">
+        
+        <a href="${v.file}" target="_blank" class="action-btn primary">Open full screen ↗</a>
+        ${v.latest ? '' : `<button class="action-btn secondary" onclick="alert('To restore this version, tell Draper: restore ${v.version}')">Restore this version</button>`}
+    `;
+}
+
+init();
+</script>
+</body>
+</html>
