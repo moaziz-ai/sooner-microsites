@@ -82,6 +82,30 @@
         }
         .status-badge.live { background-color: #E9FE0F; color: #1C1B17; }
         .status-badge.archived { background-color: #e0e0e0; color: #666; }
+            .version-links {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .version-links a {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+        .version-links a.form-link {
+            background-color: #1C1B17; /* dark */
+            color: #FFFFFF;
+        }
+        .version-links a.form-link:hover { background-color: #333333; }
+        .version-links a.flowchart-link {
+            background-color: #E9FE0F; /* yellow */
+            color: #1C1B17;
+        }
+        .version-links a.flowchart-link:hover { background-color: #e0f80d; }
     </style>
 </head>
 <body>
@@ -118,17 +142,18 @@
                     const li = document.createElement('li');
                     li.className = 'version-item';
                     li.dataset.versionId = version.id;
-                    li.innerHTML = \`
+                    li.innerHTML = `
                         <div class="version-label">
-                            \${version.label}
-                            <span class="status-badge \${version.status}">\${version.status}</span>
+                            ${version.label}
+                            <span class="status-badge ${version.status}">${version.status}</span>
                         </div>
-                        <div class="version-date">\${version.date}</div>
-                    \`;
-                    li.addEventListener('click', () => {
-                        loadPreview(version.file);
-                        highlightActive(version.id);
-                    });
+                        <div class="version-date">${version.date}</div>
+                        <div class="version-links">
+                            <a href="${version.file}" target="_blank" class="form-link">View Form</a>
+                            <a href="${version.flowchart}" target="_blank" class="flowchart-link">View Flowchart</a>
+                        </div>
+                    `;
+                    // The click listener is now handled by the explicit buttons
                     versionList.appendChild(li);
                 });
             }
